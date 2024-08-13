@@ -21,6 +21,7 @@ sudo apt-get install build-essential cmake
 Instructions for compiling and building the project, assuming you are in the project root directory `ComparerBuilder`:
 
 ```bash
+mkdir build
 cd build
 cmake ..
 make
