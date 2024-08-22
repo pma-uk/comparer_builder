@@ -27,7 +27,7 @@ public:
     * Function:     comparer_builder::by
     * Purpose:      Adds a comparison function based on a member variable of the class T.
     *
-    * Inputs:       U T::* pMember      Pointer to member variable of type U within class T.
+    * Inputs:       U T::* pMember      Pointer to member variable or function of type U within class T.
     *               bool descending     If true, sorts in descending order; otherwise, sorts in ascending order (default is false).
     *
     * Outputs:      None
@@ -41,45 +41,17 @@ public:
         (
             [pMember, descending](const T& lhs, const T& rhs) 
             {
-                if (descending) 
+                // Using std::invoke should allow call or access to be uniform - reduces code redundancy and need for function overloading
+                auto lhsValue = std::invoke(pMember, lhs);
+                auto rhsValue = std::invoke(pMember, rhs);
+
+                if (descending)
                 {
-                    return lhs.*pMember > rhs.*pMember;
-                } 
-                else 
-                {
-                    return lhs.*pMember < rhs.*pMember;
+                    return lhsValue > rhsValue;
                 }
-            }
-        );
-        return *this;
-    }
-
-
-    /*
-    * Function:     comparer_builder::by
-    * Purpose:      Adds a comparison function based on a member function of the class T that returns a value of type U.
-    *
-    * Inputs:       U (T::* pGetter)() const    Pointer to a const member function of type U (returns U, no arguments) within class T.
-    *               bool descending             If true, sorts in descending order; otherwise, sorts in ascending order (default is false).
-    *
-    * Outputs:      None
-    *
-    * Returns:      comparer_builder&           Reference to the current comparer_builder object to allow method chaining.
-    */
-    template<typename U>
-    comparer_builder& by(U (T::* pGetter)() const, bool descending = false) 
-    {
-        comparers.emplace_back
-        (
-            [pGetter, descending](const T& lhs, const T& rhs) 
-            {
-                if (descending) 
+                else
                 {
-                    return (lhs.*pGetter)() > (rhs.*pGetter)();
-                } 
-                else 
-                {
-                    return (lhs.*pGetter)() < (rhs.*pGetter)();
+                    return lhsValue < rhsValue;
                 }
             }
         );
